@@ -1,8 +1,7 @@
-use std::net::{IpAddr, Ipv4Addr};
-
 use anyhow::{anyhow, Result};
 use der_parser::oid;
 use serde::{Deserialize, Serialize};
+use std::net::Ipv4Addr;
 use x509_parser::{
     extensions::{GeneralName, ParsedExtension, SubjectAlternativeName, X509Extension},
     prelude::oid_registry,
