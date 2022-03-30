@@ -158,11 +158,9 @@ fn decode_san(san: &X509Extension) -> Vec<String> {
 
 #[cfg(test)]
 mod test {
-    use super::{parse_logs, LogEntry, Logs};
+    use super::{parse_logs, CertDetails, LogEntry, Logs};
 
-    #[test]
-    fn should_parse_cert_from_leaf_data() {
-        let cert = include_str!("../resources/test/leaf_input_with_cert").trim();
+    fn get_cert_details(cert: &str) -> CertDetails {
         let logs = Logs {
             entries: vec![LogEntry {
                 leaf_input: cert.to_string(),
@@ -171,7 +169,13 @@ mod test {
         };
         let mut result = parse_logs(logs);
         assert_eq!(result.len(), 1);
-        let details = result.pop().unwrap().1.unwrap();
+        result.pop().unwrap().1.unwrap()
+    }
+
+    #[test]
+    fn should_parse_cert_from_leaf_data() {
+        let details =
+            get_cert_details(include_str!("../resources/test/leaf_input_with_cert").trim());
         assert_eq!(details.subject, "CN=www.libraryav.com.au".to_string());
         assert_eq!(details.not_before, 1501804800);
         assert_eq!(details.not_after, 1596499199);
@@ -183,32 +187,17 @@ mod test {
 
     #[test]
     fn should_parse_cert_where_san_has_directory_name() {
-        let cert =
-            include_str!("../resources/test/leaf_input_cert__san_with_directory_name").trim();
-        let logs = Logs {
-            entries: vec![LogEntry {
-                leaf_input: cert.to_string(),
-                extra_data: "".to_string(),
-            }],
-        };
-        let mut result = parse_logs(logs);
-        assert_eq!(result.len(), 1);
-        let details = result.pop().unwrap().1.unwrap();
+        let details = get_cert_details(
+            include_str!("../resources/test/leaf_input_cert__san_with_directory_name").trim(),
+        );
         assert_eq!(details.san, vec!["CN=VeriSignMPKI-2-58"]);
     }
 
     #[test]
     fn should_parse_cert_where_san_has_othername() {
-        let cert = include_str!("../resources/test/leaf_input_cert__san_with_othername").trim();
-        let logs = Logs {
-            entries: vec![LogEntry {
-                leaf_input: cert.to_string(),
-                extra_data: "".to_string(),
-            }],
-        };
-        let mut result = parse_logs(logs);
-        assert_eq!(result.len(), 1);
-        let details = result.pop().unwrap().1.unwrap();
+        let details = get_cert_details(
+            include_str!("../resources/test/leaf_input_cert__san_with_othername").trim(),
+        );
         assert_eq!(
             details.san,
             vec![
@@ -221,31 +210,17 @@ mod test {
 
     #[test]
     fn should_parse_cert_where_san_has_ipv4_address() {
-        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ipv4_address").trim();
-        let logs = Logs {
-            entries: vec![LogEntry {
-                leaf_input: cert.to_string(),
-                extra_data: "".to_string(),
-            }],
-        };
-        let mut result = parse_logs(logs);
-        assert_eq!(result.len(), 1);
-        let details = result.pop().unwrap().1.unwrap();
+        let details = get_cert_details(
+            include_str!("../resources/test/leaf_input_cert__san_with_ipv4_address").trim(),
+        );
         assert!(details.san.contains(&"121.242.194.66".to_string()));
     }
 
     #[test]
     fn should_parse_cert_where_san_has_ipv6_address() {
-        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ipv6_address").trim();
-        let logs = Logs {
-            entries: vec![LogEntry {
-                leaf_input: cert.to_string(),
-                extra_data: "".to_string(),
-            }],
-        };
-        let mut result = parse_logs(logs);
-        assert_eq!(result.len(), 1);
-        let details = result.pop().unwrap().1.unwrap();
+        let details = get_cert_details(
+            include_str!("../resources/test/leaf_input_cert__san_with_ipv6_address").trim(),
+        );
         assert!(
             details.san.contains(&"2001:638:819:2000::f9".to_string()),
             "san = {:?}",
