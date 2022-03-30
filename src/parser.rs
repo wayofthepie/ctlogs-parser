@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use der_parser::oid;
 use serde::{Deserialize, Serialize};
-use std::net::Ipv4Addr;
+use std::net::IpAddr;
 use x509_parser::{
     extensions::{GeneralName, ParsedExtension, SubjectAlternativeName, X509Extension},
     prelude::oid_registry,
@@ -121,8 +121,22 @@ fn decode_san(san: &X509Extension) -> Vec<String> {
                     acc.push(uri.to_string());
                 }
                 GeneralName::IPAddress(ip) => match ip.len() {
-                    4 => acc.push(Ipv4Addr::new(ip[0], ip[1], ip[2], ip[3]).to_string()),
-                    //16 => acc.push(Ipv4Addr::new(ip[0], ip[1], ip[2])),
+                    4 => {
+                        let bytes: [u8; 4] = (*ip)
+                            .try_into()
+                            .expect("slice representing ipv4 with incorrect length");
+                        if let IpAddr::V4(address) = IpAddr::from(bytes) {
+                            acc.push(address.to_string());
+                        }
+                    }
+                    16 => {
+                        let bytes: [u8; 16] = (*ip)
+                            .try_into()
+                            .expect("slice representing ipv4 with incorrect length");
+                        if let IpAddr::V6(address) = IpAddr::from(bytes) {
+                            acc.push(address.to_string())
+                        }
+                    }
                     _ => acc.push("IpAddress:<invalid>".to_string()),
                 },
                 GeneralName::RegisteredID(_) => {
@@ -218,5 +232,24 @@ mod test {
         assert_eq!(result.len(), 1);
         let details = result.pop().unwrap().1.unwrap();
         assert!(details.san.contains(&"121.242.194.66".to_string()));
+    }
+
+    #[test]
+    fn should_parse_cert_where_san_has_ipv6_address() {
+        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ipv6_address").trim();
+        let logs = Logs {
+            entries: vec![LogEntry {
+                leaf_input: cert.to_string(),
+                extra_data: "".to_string(),
+            }],
+        };
+        let mut result = parse_logs(logs);
+        assert_eq!(result.len(), 1);
+        let details = result.pop().unwrap().1.unwrap();
+        assert!(
+            details.san.contains(&"2001:638:819:2000::f9".to_string()),
+            "san = {:?}",
+            details.san
+        );
     }
 }
