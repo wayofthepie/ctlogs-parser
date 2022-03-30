@@ -221,7 +221,7 @@ mod test {
 
     #[test]
     fn should_parse_cert_where_san_has_ipv4_address() {
-        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ip_v4_address").trim();
+        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ipv4_address").trim();
         let logs = Logs {
             entries: vec![LogEntry {
                 leaf_input: cert.to_string(),
