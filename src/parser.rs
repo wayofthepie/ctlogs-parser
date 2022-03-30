@@ -1,3 +1,5 @@
+use std::net::{IpAddr, Ipv4Addr};
+
 use anyhow::{anyhow, Result};
 use der_parser::oid;
 use serde::{Deserialize, Serialize};
@@ -105,7 +107,7 @@ fn decode_san(san: &X509Extension) -> Vec<String> {
         general_names.iter().fold(Vec::new(), |mut acc, name| {
             match name {
                 GeneralName::OtherName(_, _) => {
-                    // skip
+                    acc.push("othername:<unsupported>".to_string());
                 }
                 GeneralName::RFC822Name(rfc822) => {
                     acc.push(rfc822.to_string());
@@ -119,9 +121,11 @@ fn decode_san(san: &X509Extension) -> Vec<String> {
                 GeneralName::URI(uri) => {
                     acc.push(uri.to_string());
                 }
-                GeneralName::IPAddress(_) => {
-                    // skip
-                }
+                GeneralName::IPAddress(ip) => match ip.len() {
+                    4 => acc.push(Ipv4Addr::new(ip[0], ip[1], ip[2], ip[3]).to_string()),
+                    //16 => acc.push(Ipv4Addr::new(ip[0], ip[1], ip[2])),
+                    _ => acc.push("IpAddress:<invalid>".to_string()),
+                },
                 GeneralName::RegisteredID(_) => {
                     // skip
                 }
@@ -177,9 +181,43 @@ mod test {
         let mut result = parse_logs(logs);
         assert_eq!(result.len(), 1);
         let details = result.pop().unwrap().1.unwrap();
-        //        assert_eq!(details.subject, "CN=www.libraryav.com.au".to_string());
-        //        assert_eq!(details.not_before, 1501804800);
-        //        assert_eq!(details.not_after, 1596499199);
         assert_eq!(details.san, vec!["CN=VeriSignMPKI-2-58"]);
+    }
+
+    #[test]
+    fn should_parse_cert_where_san_has_othername() {
+        let cert = include_str!("../resources/test/leaf_input_cert__san_with_othername").trim();
+        let logs = Logs {
+            entries: vec![LogEntry {
+                leaf_input: cert.to_string(),
+                extra_data: "".to_string(),
+            }],
+        };
+        let mut result = parse_logs(logs);
+        assert_eq!(result.len(), 1);
+        let details = result.pop().unwrap().1.unwrap();
+        assert_eq!(
+            details.san,
+            vec![
+                "150.187.108.110",
+                "othername:<unsupported>",
+                "othername:<unsupported>"
+            ]
+        );
+    }
+
+    #[test]
+    fn should_parse_cert_where_san_has_ipv4_address() {
+        let cert = include_str!("../resources/test/leaf_input_cert__san_with_ip_v4_address").trim();
+        let logs = Logs {
+            entries: vec![LogEntry {
+                leaf_input: cert.to_string(),
+                extra_data: "".to_string(),
+            }],
+        };
+        let mut result = parse_logs(logs);
+        assert_eq!(result.len(), 1);
+        let details = result.pop().unwrap().1.unwrap();
+        assert!(details.san.contains(&"121.242.194.66".to_string()));
     }
 }
