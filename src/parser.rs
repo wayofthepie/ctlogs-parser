@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Result};
-use der_parser::oid;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use x509_parser::{
@@ -79,7 +78,7 @@ fn parse_x509_bytes(bytes: &[u8], position: usize) -> Result<CertDetails> {
             // skip formatting this for now, the ".17" gets prefixed with a space, doesnt break
             // but looks weird
             #[rustfmt::skip]
-            let san_oid = oid!(2.5.29.17);
+            let san_oid = x509_parser::der_parser::oid!(2.5.29.17);
             let san = extensions
                 .iter()
                 .filter(|extension| extension.oid == san_oid)
