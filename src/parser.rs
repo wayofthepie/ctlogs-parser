@@ -57,8 +57,6 @@ pub fn parse_logs(logs: Logs) -> Vec<(usize, Result<CertDetails>)> {
                         position,
                         parse_x509_bytes(&bytes[15..cert_end_index], position),
                     ));
-                } else {
-                    println!("precert");
                 }
             }
             Err(_) => details.push((
