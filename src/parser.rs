@@ -43,7 +43,7 @@ pub struct CertDetails {
     pub san: Vec<String>,
 }
 
-pub fn parse_logs(logs: Logs) -> Vec<(usize, Result<CertDetails>)> {
+pub fn parse_logs(logs: &Logs) -> Vec<(usize, Result<CertDetails>)> {
     let mut details = vec![];
     for (position, entry) in logs.entries.iter().enumerate() {
         match base64::decode(&entry.leaf_input) {
@@ -164,7 +164,7 @@ mod test {
                 extra_data: "".to_string(),
             }],
         };
-        let mut result = parse_logs(logs);
+        let mut result = parse_logs(&logs);
         assert_eq!(result.len(), 1);
         result.pop().unwrap().1.unwrap()
     }
