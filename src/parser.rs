@@ -11,7 +11,7 @@ pub struct Logs {
     pub entries: Vec<LogEntry>,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, Eq, PartialEq)]
 pub struct LogEntry {
     /// The `leaf_input` field is a `String` of base64 encoded data. The data is a DER encoded
     /// MerkleTreeHeader, which has the following structure.
