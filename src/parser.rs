@@ -8,8 +8,6 @@ use x509_parser::{
 
 #[derive(Debug, Default, Deserialize, Serialize, Eq, PartialEq)]
 pub struct Logs {
-    /// The position in given certificate transparency log of the first [`LogEntry`] in the entries Vec.
-    pub position: usize,
     pub entries: Vec<LogEntry>,
 }
 
@@ -165,7 +163,6 @@ mod test {
                 leaf_input: cert.to_string(),
                 extra_data: "".to_string(),
             }],
-            ..Default::default()
         };
         let mut result = parse_logs(&logs);
         assert_eq!(result.len(), 1);
