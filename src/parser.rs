@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use x509_parser::{
@@ -46,7 +47,7 @@ pub struct CertDetails {
 pub fn parse_logs(logs: &Logs) -> Vec<(usize, Result<CertDetails>)> {
     let mut details = vec![];
     for (position, entry) in logs.entries.iter().enumerate() {
-        match base64::decode(&entry.leaf_input) {
+        match general_purpose::STANDARD.decode(&entry.leaf_input) {
             Ok(bytes) => {
                 let entry_type = bytes[10] + bytes[11];
                 if entry_type == 0 {
