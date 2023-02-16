@@ -26,7 +26,7 @@ jobs:
           args: --all -- --check
       - name: run cargo sort
         run: |
-          cargo install cargo sort
+          cargo install cargo-sort
           cargo sort -c
       - name: compile
         uses: actions-rs/cargo@v1
