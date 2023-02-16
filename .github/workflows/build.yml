@@ -26,8 +26,8 @@ jobs:
           args: --all -- --check
       - name: run cargo sort
         run: |
-          cargo install cargo-sort-ck
-          cargo-sort-ck
+          cargo install cargo sort
+          cargo sort -c
       - name: compile
         uses: actions-rs/cargo@v1
         with:
@@ -35,7 +35,7 @@ jobs:
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: '--avoid-cfg-tarpaulin -- --test-threads 1'
+          args: "--avoid-cfg-tarpaulin -- --test-threads 1"
       - name: clippy lint
         uses: actions-rs/clippy-check@v1
         with:
@@ -46,17 +46,17 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: ci
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-        components: rustfmt, clippy
-    - name: build release artifact
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --release
-    - name: publish
-      run: echo "Not sure where to put it yet ..."
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+      - name: build release artifact
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: publish
+        run: echo "Not sure where to put it yet ..."
