@@ -33,9 +33,9 @@ jobs:
         with:
           command: build
       - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          args: "--avoid-cfg-tarpaulin -- --test-threads 1"
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --avoid-cfg-tarpaulin -- --test-threads 1
       - name: clippy lint
         uses: actions-rs/clippy-check@v1
         with:
